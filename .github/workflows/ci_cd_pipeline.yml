@@ -33,13 +33,15 @@ jobs:
         run: |
           npm run build
 
-      - name: Deploy to Azure Storage
-        uses: Azure/azure-storage-blob-upload@v1  # Corrected action name
-        with:
-          connection-string: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
-          container-name: '$web'
-          source: './'
-          recursive: true
+      - name: Upload to Azure Blob Storage
+        run: |
+          az storage blob upload-batch \
+            --account-name shezanadev \
+            --destination '$web' \
+            --source './' \
+            --pattern '*'
+        env:
+          AZURE_STORAGE_CONNECTION_STRING: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
 
       - name: Purge Azure CDN
         uses: Azure/cli@v1
