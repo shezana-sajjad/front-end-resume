@@ -34,7 +34,7 @@ jobs:
           npm run build
 
       - name: Deploy to Azure Storage
-        uses: Azure/azure-storage-blob-upload@v1
+        uses: Azure/azure-storage-blob-upload@v1  # Corrected action name
         with:
           connection-string: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
           container-name: '$web'
