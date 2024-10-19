@@ -1,0 +1,6 @@
+*.txt
+js/*.js
+images/*.jpg
+images/*.jpeg
+*.pdf
+.env
