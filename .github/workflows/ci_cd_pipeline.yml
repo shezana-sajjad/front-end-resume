@@ -1,0 +1,52 @@
+name: CI/CD Frontend
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set Up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      - name: Create .env File with Secret
+        run: |
+          echo "AZURE_FUNCTION_URL=${{ secrets.AZURE_FUNCTION_URL }}" > .env
+
+      - name: Inject Secret into JS File
+        run: |
+          echo "const functionUrl = '${{ secrets.AZURE_FUNCTION_URL }}';" >> path/to/your/javascript-file.js
+
+      - name: Install Dependencies
+        run: |
+          npm install
+
+      - name: Build Project
+        run: |
+          npm run build
+
+      - name: Deploy to Azure Storage
+        uses: Azure/azure-storage-blob-upload@v1
+        with:
+          connection-string: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
+          container-name: '$web'
+          source: './'
+          recursive: true
+
+      - name: Purge Azure CDN
+        uses: Azure/cli@v1
+        with:
+          inlineScript: |
+            az cdn endpoint purge --resource-group YOUR_RESOURCE_GROUP --profile-name YOUR_CDN_PROFILE_NAME --name YOUR_CDN_ENDPOINT_NAME --content-path "/*"
+        env:
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
