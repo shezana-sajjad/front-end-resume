@@ -12,10 +12,6 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: List Files
-        run: |
-          ls -R
-
       - name: Set Up Node.js
         uses: actions/setup-node@v3
         with:
@@ -25,11 +21,15 @@ jobs:
         run: |
           echo "AZURE_FUNCTION_URL=${{ secrets.AZURE_FUNCTION_URL }}" > .env
 
+      - name: Ensure JS Directory Exists
+        run: |
+          mkdir -p src/js/  # Ensure the directory exists
+
       - name: Inject Secret into JS File
         run: |
-          echo "const functionUrl = '${{ secrets.AZURE_FUNCTION_URL }}';" >> src/js/main.js  # Adjust the path if necessary
+          echo "const functionUrl = '${{ secrets.AZURE_FUNCTION_URL }}';" > src/js/main.js  # Create the main.js file with the URL
 
-      - name: Install Node.js Dependencies
+      - name: Install Dependencies
         run: |
           npm install
 
@@ -46,15 +46,6 @@ jobs:
             --pattern '*'
         env:
           AZURE_STORAGE_CONNECTION_STRING: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
-
-      - name: Set Up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.12'
-
-      - name: Install Python Dependencies
-        run: |
-          pip install -r path/to/your/requirements.txt  # Adjust the path as necessary
 
       - name: Purge Azure CDN
         uses: Azure/cli@v1
