@@ -1,30 +1,67 @@
-name: Backend CI
+name: CI/CD Frontend
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
-  build-and-test:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v3
+      - name: List Files
+        run: |
+          ls -R
+
+      - name: Set Up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      - name: Create .env File with Secret
+        run: |
+          echo "AZURE_FUNCTION_URL=${{ secrets.AZURE_FUNCTION_URL }}" > .env
+
+      - name: Inject Secret into JS File
+        run: |
+          echo "const functionUrl = '${{ secrets.AZURE_FUNCTION_URL }}';" >> src/js/main.js  # Adjust the path if necessary
+
+      - name: Install Node.js Dependencies
+        run: |
+          npm install
+
+      - name: Build Project
+        run: |
+          npm run build
+
+      - name: Upload to Azure Blob Storage
+        run: |
+          az storage blob upload-batch \
+            --account-name shezanadev \
+            --destination '$web' \
+            --source './' \
+            --pattern '*'
+        env:
+          AZURE_STORAGE_CONNECTION_STRING: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
+
+      - name: Set Up Python
+        uses: actions/setup-python@v4
         with:
           python-version: '3.12'
 
-      - name: Install Dependencies
+      - name: Install Python Dependencies
         run: |
-          pip install -r requirements.txt
+          pip install -r path/to/your/requirements.txt  # Adjust the path as necessary
 
-      - name: Run Tests
-        run: |
-          pytest --maxfail=1 --disable-warnings
+      - name: Purge Azure CDN
+        uses: Azure/cli@v1
+        with:
+          inlineScript: |
+            az cdn endpoint purge --resource-group YOUR_RESOURCE_GROUP --profile-name YOUR_CDN_PROFILE_NAME --name YOUR_CDN_ENDPOINT_NAME --content-path "/*"
         env:
-          AZURE_COSMOSDB_ENDPOINT: ${{ secrets.AZURE_COSMOSDB_ENDPOINT }}
-          AZURE_COSMOSDB_KEY: ${{ secrets.AZURE_COSMOSDB_KEY }}
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
