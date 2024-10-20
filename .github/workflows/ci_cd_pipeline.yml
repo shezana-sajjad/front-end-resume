@@ -31,13 +31,11 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          npm install
-        working-directory: ./src  # Update this to the directory containing package.json
+          npm install  # No working-directory as package.json is in the root
 
       - name: Build Project
         run: |
-          npm run build
-        working-directory: ./src  # Update this to the directory containing package.json
+          npm run build  # No working-directory as package.json is in the root
 
       - name: Upload to Azure Blob Storage
         run: |
