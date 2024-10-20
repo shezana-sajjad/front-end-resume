@@ -21,9 +21,13 @@ jobs:
         run: |
           echo "AZURE_FUNCTION_URL=${{ secrets.AZURE_FUNCTION_URL }}" > .env
 
+      - name: Ensure JS directory exists
+        run: |
+          mkdir -p src/js/
+
       - name: Inject Secret into JS File
         run: |
-          echo "const functionUrl = '${{ secrets.AZURE_FUNCTION_URL }}';" >> path/to/your/javascript-file.js
+          echo "const functionUrl = '${{ secrets.AZURE_FUNCTION_URL }}';" >> src/js/main.js  # Update to your correct JS file path
 
       - name: Install Dependencies
         run: |
