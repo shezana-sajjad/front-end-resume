@@ -27,15 +27,17 @@ jobs:
 
       - name: Inject Secret into JS File
         run: |
-          echo "const functionUrl = '${{ secrets.AZURE_FUNCTION_URL }}';" >> src/js/main.js  # Update to your correct JS file path
+          echo "const functionUrl = '${{ secrets.AZURE_FUNCTION_URL }}';" >> src/js/main.js
 
       - name: Install Dependencies
         run: |
           npm install
+        working-directory: ./src  # Update this to the directory containing package.json
 
       - name: Build Project
         run: |
           npm run build
+        working-directory: ./src  # Update this to the directory containing package.json
 
       - name: Upload to Azure Blob Storage
         run: |
