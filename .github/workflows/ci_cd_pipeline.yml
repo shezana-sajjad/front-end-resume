@@ -21,6 +21,6 @@ jobs:
     - name: Deploy to Azure Storage
       run: |
         az storage blob upload-batch \
-          --account-name shezanadev  \
+          --account-name shezana1 \
           --destination '$web' \
           --source '.'  # Use current directory as source
