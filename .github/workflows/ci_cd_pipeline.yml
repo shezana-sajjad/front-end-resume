@@ -1,58 +1,26 @@
-name: CI/CD Frontend
+name: CI/CD for Frontend
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main  # Change to your default branch if different
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-      - name: Set Up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '16'
+    - name: Login to Azure
+      uses: Azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}  # Set this secret in GitHub
 
-      - name: Create .env File with Secret
-        run: |
-          echo "AZURE_FUNCTION_URL=${{ secrets.AZURE_FUNCTION_URL }}" > .env
-
-      - name: Ensure JS Directory Exists
-        run: |
-          mkdir -p src/js/  # Ensure the directory exists
-
-      - name: Inject Secret into JS File
-        run: |
-          echo "const functionUrl = '${{ secrets.AZURE_FUNCTION_URL }}';" > src/js/main.js  # Create the main.js file with the URL
-
-      - name: Install Dependencies
-        run: |
-          npm install
-
-      - name: Build Project
-        run: |
-          npm run build
-
-      - name: Upload to Azure Blob Storage
-        run: |
-          az storage blob upload-batch \
-            --account-name shezanadev \
-            --destination '$web' \
-            --source './' \
-            --pattern '*'
-        env:
-          AZURE_STORAGE_CONNECTION_STRING: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
-
-      - name: Purge Azure CDN
-        uses: Azure/cli@v1
-        with:
-          inlineScript: |
-            az cdn endpoint purge --resource-group YOUR_RESOURCE_GROUP --profile-name YOUR_CDN_PROFILE_NAME --name YOUR_CDN_ENDPOINT_NAME --content-path "/*"
-        env:
-          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+    - name: Deploy to Azure Storage
+      run: |
+        az storage blob upload-batch \
+          --account-name shezanadev  \
+          --destination '$web' \
+          --source '.'  # Use current directory as source
